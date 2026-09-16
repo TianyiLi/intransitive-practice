@@ -5,7 +5,7 @@ import { makeRecord, restoreRecord, reviewPosition, RecordStore } from './record
 const $ = id => document.getElementById(id);
 const NAMES = { R: '石', P: '布', S: '剪' }, COLORS = { blue: '藍方', red: '紅方' };
 const PIECE_ART = { R: 'rock', P: 'paper', S: 'scissors' };
-const pieceImage = type => `<img class="piece-art" src="./assets/${PIECE_ART[type]}.png?v=__ASSET_VERSION__" alt="" draggable="false">`;
+const pieceImage = type => `<svg class="piece-art" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><use href="./assets/pieces.svg#${PIECE_ART[type]}"></use></svg>`;
 const trainingPage = new URLSearchParams(location.search).has('training');
 const STORE = trainingPage ? 'intransitive-engine-training-v1' : 'intransitive-practice-v1';
 let match = new Match(), selected = null, flipped = false, toastTimer, storageWarning = false;
@@ -80,6 +80,7 @@ function render() {
   $('local-label').textContent = mode === 'codex' ? '你與 Codex 的棋局' : '自動對戰練習';
   $('human-caption').textContent = `${COLORS[match.humanSide]}・${match.humanSide === 'blue' ? '先手' : '後手'}`;
   $('agent-caption').textContent = `${COLORS[match.agentSide]}・${match.agentSide === 'blue' ? '先手' : '後手'}`;
+  $('human-inventory').className = `inventory ${match.humanSide}`; $('agent-inventory').className = `inventory ${match.agentSide}`;
   $('human-inventory').innerHTML = counts(match.humanSide); $('agent-inventory').innerHTML = counts(match.agentSide);
   $('round-label').textContent = `第 ${p.result ? Math.ceil(p.ply / 2) : Math.floor(p.ply / 2) + 1} 回合`;
   $('ply-label').textContent = p.result ? `共 ${p.ply} 手` : `第 ${p.ply + 1} 手待走`;

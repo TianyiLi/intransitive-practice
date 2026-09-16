@@ -10,7 +10,7 @@
 
 ## GitHub Pages 部署
 
-需要 Node.js 22 以上，不需安裝套件。`npm test` 執行測試，`npm run build` 將 11 個公開資源複製至 `dist/`。`main` 每次 push 後由 GitHub Actions 測試並部署至 Pages；PR 只做測試與建置。所有模組與 Worker 採相對路徑，支援專案子目錄。
+需要 Node.js 22 以上，不需安裝套件。`npm test` 執行測試，`npm run build` 將 9 個公開資源複製至 `dist/`。`main` 每次 push 後由 GitHub Actions 測試並部署至 Pages；PR 只做測試與建置。所有模組與 Worker 採相對路徑，支援專案子目錄。
 
 GitHub Pages 與本機是不同來源，瀏覽器不會自動搬移棋局。要延續本機存檔，先在原頁匯出 JSON，再到線上版匯入。棋局資料只存於使用者瀏覽器，不會上傳到 GitHub。
 
@@ -75,4 +75,4 @@ Agent 復盤流程：先 `get_game_record` 固定目前步數，必要時 `save_
 
 ## 棋子圖像
 
-剪刀、石頭、布使用 image_gen 生成的透明手繪手勢 PNG，位於 `assets/scissors.png`、`assets/rock.png`、`assets/paper.png`。主棋盤、復盤、數量列與剋制關係共用同組圖片，藍紅邊框區分雙方；無障礙名稱仍保留。完整產圖提示詞見 [assets/ARTWORK.md](assets/ARTWORK.md)。
+目前使用 `assets/pieces.svg` 裡自行繪製的石塊、橫線紙張與張開剪刀，參考[官方遊戲](https://meaf.us/rps2/)的實物簡筆線稿方向。三者以不同輪廓辨識，紅藍線條區分雙方，移除手势與圓形底座。主棋盤、復盤、數量列與剋制關係共用同組 SVG，無障礙名稱仍保留。舊版 image_gen 手勢 PNG 保留於 assets 供設計歷史參考，不再打包或使用。

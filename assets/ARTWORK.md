@@ -1,3 +1,9 @@
+# Current artwork: object silhouettes
+
+`pieces.svg` contains original hand-authored vector drawings of a pebble, a lined paper sheet, and open scissors. Inspired by the object-based sketch direction of https://meaf.us/rps2/, redrawn for clear silhouettes and inherited team colors. No circular badge or hand gesture is used in the active interface. These SVG symbols are shared by the board, replay, inventory and rules diagram.
+
+The PNG images and prompts below are the superseded hand-gesture design. They are retained for design history and are not included in the deployed site.
+
 # Hand-drawn game pieces
 
 Generated with the built-in image_gen tool on 2026-09-16. Original transparent PNG output copied into the repository without pixel edits. The blue/red token backgrounds are CSS, shared across both teams.

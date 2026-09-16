@@ -1,9 +1,10 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 const output = new URL('./dist/', import.meta.url);
+await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 await mkdir(new URL('assets/', output), { recursive: true });
-const assets = ['index.html', 'style.css', 'app.mjs', 'engine.mjs', 'strategy.mjs', 'strategy-worker.mjs', 'bot-controller.mjs', 'records.mjs', 'assets/rock.png', 'assets/paper.png', 'assets/scissors.png'];
+const assets = ['index.html', 'style.css', 'app.mjs', 'engine.mjs', 'strategy.mjs', 'strategy-worker.mjs', 'bot-controller.mjs', 'records.mjs', 'assets/pieces.svg'];
 const contents = await Promise.all(assets.map(name => readFile(new URL(name, import.meta.url))));
 const hash = createHash('sha256');
 hash.update(await readFile(new URL('./build.mjs', import.meta.url)));
