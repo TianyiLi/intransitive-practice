@@ -5,7 +5,7 @@ import { makeRecord, restoreRecord, reviewPosition, RecordStore } from './record
 const $ = id => document.getElementById(id);
 const NAMES = { R: '石', P: '布', S: '剪' }, COLORS = { blue: '藍方', red: '紅方' };
 const PIECE_ART = { R: 'rock', P: 'paper', S: 'scissors' };
-const pieceImage = type => `<img class="piece-art" src="./assets/${PIECE_ART[type]}.png" alt="" draggable="false">`;
+const pieceImage = type => `<img class="piece-art" src="./assets/${PIECE_ART[type]}.png?v=__ASSET_VERSION__" alt="" draggable="false">`;
 const trainingPage = new URLSearchParams(location.search).has('training');
 const STORE = trainingPage ? 'intransitive-engine-training-v1' : 'intransitive-practice-v1';
 let match = new Match(), selected = null, flipped = false, toastTimer, storageWarning = false;
