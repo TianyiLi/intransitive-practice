@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Intransitive 練習室 · 策略引擎對戰</title>
+  <meta name="description" content="剪刀、石頭、布的棋盤對決。挑戰三種難度的策略引擎，練習走位、吃子與突破基地。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%232762d6'/%3E%3Ctext x='20' y='29' text-anchor='middle' font-size='29' fill='white'%3E↻%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css"><script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar"><a class="brand" href="./"><span class="brand-mark" aria-hidden="true">↻</span><span>Intransitive <small>練習室</small></span></a><span class="local-label" id="local-label">你與 Codex 的棋局</span><button class="quiet" id="rules-button">玩法說明 <span aria-hidden="true">?</span></button></header>
+    <main>
+      <section class="arena" aria-label="對戰棋盤">
+        <div class="player-strip opponent"><div class="avatar red" id="agent-avatar">C</div><div><strong id="agent-name">Codex</strong><span id="agent-caption">紅方・後手</span></div><div class="inventory" id="agent-inventory"></div></div>
+        <div class="board-frame"><div id="board" class="board" role="group" aria-label="9 乘 9 棋盤，A1 在左下角"></div></div>
+        <div class="player-strip you"><div class="avatar blue" id="human-avatar">你</div><div><strong>你</strong><span id="human-caption">藍方・先手</span></div><div class="inventory" id="human-inventory"></div></div>
+        <div class="board-toolbar"><div class="legend"><span class="legend-dot"></span> 可移動 <span class="legend-ring"></span> 可吃子</div><div><button class="icon-button" id="undo" disabled>↶ 悔一步</button><button class="icon-button" id="redo" disabled>↷ 重做</button><button class="icon-button" id="flip">⇄ 翻轉</button></div></div>
+      </section>
+      <aside class="sidebar"><section class="opponent-settings"><div class="section-heading"><label for="opponent-select">對手與難度</label><button class="text-button" id="pause-engine" hidden>暫停</button></div><select id="opponent-select"><option value="easy">簡單 · 熟悉走位</option><option value="medium">中等 · 交換攻防</option><option value="hard">困難 · 勝利規劃</option><option value="codex">與 Codex 對戰</option></select><p id="difficulty-description"></p></section>
+        <section class="turn-panel" aria-live="polite" aria-atomic="true"><div class="turn-kicker"><span id="turn-dot" class="status-dot blue"></span><span id="round-label">第 1 回合</span><span class="pill">無計時</span></div><h1 id="turn-title">輪到你了</h1><p id="turn-description">選一枚藍色棋子，再點選要前進的格子。</p><div class="connection" id="connection">正在準備對戰工具…</div></section>
+        <div class="engine-insight" id="engine-insight" hidden><strong>引擎這一步</strong><p id="engine-reason"></p><small id="engine-metrics"></small></div><section class="match-controls"><div class="section-heading"><h2>這一局</h2><button class="text-button" id="new-game">開始新局</button></div><p class="objective" id="objective">你的目標 <b>I9</b><span>進入紅方基地即可獲勝</span></p><div class="cycle"><span>石 <b>R</b></span><i>勝</i><span>剪 <b>S</b></span><i>勝</i><span>布 <b>P</b></span><i>勝石</i></div></section>
+        <section class="history-panel"><div class="section-heading"><h2>棋譜</h2><button class="text-button" id="export">匯出</button></div><div class="history-head"><span>回合</span><span>藍方</span><span>紅方</span></div><div id="history" class="history"><div class="empty-history"><span aria-hidden="true">↗</span><p>第一步，由你開始。</p><small>每一步都會記錄在這裡</small></div></div><p class="history-note" id="selection-note">點選棋子，查看合法走法。</p></section>
+        <p class="chat-hint" id="chat-hint">與我對戰：走完後，在 Codex 對話說「換你」。<br>我會讀取這個棋盤，直接走下一步。</p>
+      </aside>
+    </main>
+    <div class="archive-bar"><button class="quiet" id="records-button">戰役存取與復盤</button><span>保存這局、載入續下，或逐步查看棋局。</span></div>
+    <footer><span>非官方練習版・進度存於分頁，戰役可另存於此瀏覽器</span><nav><a href="https://meaf.us/rps2/" target="_blank" rel="noopener noreferrer">官方遊戲 ↗</a><a href="https://www.youtube.com/watch?v=LO_zcGNJriA" target="_blank" rel="noopener noreferrer">規則與策略影片 ↗</a></nav></footer>
+  </div>
+  <div id="toast" role="status" class="toast" hidden></div>
+  <dialog id="rules-dialog"><div class="dialog-header"><h2>三種棋子，一場攻防。</h2><button class="close" data-close="rules-dialog" aria-label="關閉玩法說明">×</button></div><div class="rules-content"><p>雙方各有 10 枚棋子：3 石、4 布、3 剪。藍方先手，紅方後手。</p><ol><li><strong>每步走一格。</strong>上下左右或斜向皆可，不能跳過棋子或走到友方佔據的格子。</li><li><strong>以剋制關係吃子。</strong>石吃剪、剪吃布、布吃石；同類或剋制你的敵子會擋路。</li><li><strong>攻入對方基地。</strong>藍方朝 I9，紅方朝 A1。吃光敵子或讓對手無合法走法也獲勝。</li></ol><p class="note">練習設定：不計時；連續 200 步（雙方各 100 步）無吃子判和。Codex 模式每次悔一步；引擎模式退回到你上次落子前並暫停，可重做或按「繼續」。重新整理會還原此分頁棋局。</p><h3>與策略引擎練習</h3><p>選擇簡單、中等或困難，你落子後對手會自動回應。可隨時切換難度；暫停、悔棋與新局會取消尚未完成的計算。</p><p>簡單採單步評估與多樣選擇；中等最多搜尋 3 手；困難以基地突破、阻止對方達標及封鎖走法為主要目標，最多搜尋 5 手，並延伸檢查迫近基地的威脅與必要交換。棋子數是輔助評估，不以多吃子為主要目標。路線估計考量阻擋與敵方控制，但不是必勝證明。這裡的「手」是雙方交替的一次落子。實際深度受每步時間上限影響，不保證最佳解。</p><h3>與 Codex 對戰</h3><p>你操作自己的棋子；Codex 透過 WebMCP 操作另一方。走完後回到對話說「換你」。頁面本身不會自動呼叫 AI。</p><h3>練習時可以觀察</h3><p>進攻棋子是否有人保護？交換後能否回吃？對方是不是只差一步就能進入你的基地？</p><p class="note">棋盤與核心規則核對自 2026-09-16 官方網頁。影片保留原連結；未取得字幕，因此不將上述提示視為影片逐字內容。</p><h3>策略資料</h3><p>網路未找到足以驗證的本作開局庫。引擎採用 <a href="https://inst.eecs.berkeley.edu/~cs188/textbook/games/minimax.html" target="_blank" rel="noopener noreferrer">Berkeley CS188 的 Minimax 與 Alpha–Beta 方法</a>，再依本作棋規設計回吃保護、棋種保留、走位與基地壓力評分。這些評分是本練習版的設計，並非官方定式。</p></div><button class="primary" data-close="rules-dialog">知道了，開始下棋</button></dialog>
+  <dialog id="new-dialog"><div class="dialog-header"><h2>開始新局</h2><button class="close" data-close="new-dialog" aria-label="取消新局">×</button></div><p>每局可自由選擇難度與顏色。藍方永遠先手。</p><label class="dialog-select-label" for="new-opponent">對手與難度</label><select id="new-opponent"><option value="easy">簡單 · 熟悉走位</option><option value="medium">中等 · 交換攻防</option><option value="hard">困難 · 勝利規劃</option><option value="codex">與 Codex 對戰</option></select><fieldset><legend>你的顏色</legend><label><input type="radio" name="side" value="blue" checked> 藍方・我先走</label><label><input type="radio" name="side" value="red"> 紅方・對手先走</label></fieldset><p class="note">目前棋譜將由新局取代；需要保留時可先匯出。</p><button class="primary" id="confirm-new">開始新局</button></dialog>
+  <dialog id="records-dialog"><div class="dialog-header"><h2>戰役存取與復盤</h2><button class="close" data-close="records-dialog" aria-label="關閉戰役復盤">×</button></div>
+    <p class="note">復盤不改變目前棋盤。載入續下會先備份原局，再還原存檔所在步數並暫停引擎。存檔留在此瀏覽器；跨裝置請匯出 JSON。</p>
+    <label class="dialog-select-label" for="record-name">目前戰役名稱</label><div class="record-save-row"><input id="record-name" maxlength="80" placeholder="例如：第 1 局・練習基地防守"><button class="quiet" id="save-record">儲存目前戰役</button></div>
+    <label class="dialog-select-label" for="saved-records">選擇復盤戰役</label><select id="saved-records"></select>
+    <div class="record-actions"><button class="quiet" id="load-record">載入這局續下</button><button class="quiet" id="export-record">匯出所選戰役</button></div>
+    <div class="review-heading"><button class="quiet" id="review-prev" aria-label="復盤上一步">←</button><label id="review-label" for="review-ply">第 0 手</label><button class="quiet" id="review-next" aria-label="復盤下一步">→</button></div>
+    <input id="review-ply" type="range" min="0" max="0" value="0" step="1"><p id="review-description"></p>
+    <div id="review-board" class="board" role="group" aria-label="唯讀復盤棋盤"></div>
+    <details><summary>匯入戰役 JSON</summary><label class="dialog-select-label" for="import-file">選擇戰役檔案</label><input id="import-file" type="file" accept="application/json,.json"><label class="dialog-select-label" for="import-json">或貼上 JSON</label><textarea id="import-json" rows="4" maxlength="1000000"></textarea><button class="quiet" id="import-record">匯入為新存檔</button></details>
+    <p id="record-message" role="status" aria-live="polite"></p>
+  </dialog>
+</body></html>

@@ -1,0 +1,13 @@
+{
+  "name": "intransitive-practice",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Intransitive practice with three strategy levels, saved games, replay and WebMCP tools.",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test engine.test.mjs strategy.test.mjs bot-controller.test.mjs records.test.mjs",
+    "build": "node build.mjs"
+  }
+}
