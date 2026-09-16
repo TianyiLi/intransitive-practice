@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 const files = { '/': ['index.html', 'text/html; charset=utf-8'], '/index.html': ['index.html', 'text/html; charset=utf-8'], '/style.css': ['style.css', 'text/css; charset=utf-8'], '/app.mjs': ['app.mjs', 'text/javascript; charset=utf-8'], '/engine.mjs': ['engine.mjs', 'text/javascript; charset=utf-8'] };
 for (const file of ['strategy.mjs','strategy-worker.mjs','bot-controller.mjs','records.mjs']) files['/'+file] = [file,'text/javascript; charset=utf-8'];
+for (const name of ['rock','paper','scissors']) files[`/assets/${name}.png`] = [`assets/${name}.png`, 'image/png'];
 const port = Number(process.env.PORT || 4318);
 createServer(async (request, response) => {
   const path = new URL(request.url, 'http://localhost').pathname;

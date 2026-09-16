@@ -10,7 +10,7 @@
 
 ## GitHub Pages 部署
 
-需要 Node.js 22 以上，不需安裝套件。`npm test` 執行測試，`npm run build` 將 8 個公開資源複製至 `dist/`。`main` 每次 push 後由 GitHub Actions 測試並部署至 Pages；PR 只做測試與建置。所有模組與 Worker 採相對路徑，支援專案子目錄。
+需要 Node.js 22 以上，不需安裝套件。`npm test` 執行測試，`npm run build` 將 11 個公開資源複製至 `dist/`。`main` 每次 push 後由 GitHub Actions 測試並部署至 Pages；PR 只做測試與建置。所有模組與 Worker 採相對路徑，支援專案子目錄。
 
 GitHub Pages 與本機是不同來源，瀏覽器不會自動搬移棋局。要延續本機存檔，先在原頁匯出 JSON，再到線上版匯入。棋局資料只存於使用者瀏覽器，不會上傳到 GitHub。
 
@@ -72,3 +72,7 @@ Agent 復盤流程：先 `get_game_record` 固定目前步數，必要時 `save_
 - 使用者影片 https://www.youtube.com/watch?v=LO_zcGNJriA ：已確認為 webgoatguy 的 I Reinvented Rock Paper Scissors。瀏覽器無法播放影片，字幕匯出回報無字幕；不宣稱已核對影片策略。頁面策略提示是基於棋規的通用練習提示。
 
 21 項測試涵蓋配置、移動、九種吃子組合、終局、停滯、角色限制、棋局版本、悔棋與分支；搜尋引擎與規則引擎在 160 個種子局面的合法走法比對、雙方基地攻防、回吃陷阱、限時回退、輸入不變及取消過期工作；戰役存取往返、分支復盤、舊格式匯入、不合法棋譜與儲存失敗。困難模式另外驗證：放棄吃子選擇強制基地勝利、封鎖取勝，以及路線評估包含敵方控制。
+
+## 棋子圖像
+
+剪刀、石頭、布使用 image_gen 生成的透明手繪手勢 PNG，位於 `assets/scissors.png`、`assets/rock.png`、`assets/paper.png`。主棋盤、復盤、數量列與剋制關係共用同組圖片，藍紅邊框區分雙方；無障礙名稱仍保留。完整產圖提示詞見 [assets/ARTWORK.md](assets/ARTWORK.md)。

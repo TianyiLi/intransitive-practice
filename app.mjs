@@ -4,6 +4,8 @@ import { BotController } from './bot-controller.mjs';
 import { makeRecord, restoreRecord, reviewPosition, RecordStore } from './records.mjs';
 const $ = id => document.getElementById(id);
 const NAMES = { R: '石', P: '布', S: '剪' }, COLORS = { blue: '藍方', red: '紅方' };
+const PIECE_ART = { R: 'rock', P: 'paper', S: 'scissors' };
+const pieceImage = type => `<img class="piece-art" src="./assets/${PIECE_ART[type]}.png" alt="" draggable="false">`;
 const trainingPage = new URLSearchParams(location.search).has('training');
 const STORE = trainingPage ? 'intransitive-engine-training-v1' : 'intransitive-practice-v1';
 let match = new Match(), selected = null, flipped = false, toastTimer, storageWarning = false;
@@ -41,7 +43,7 @@ function toast(message) {
 }
 function counts(side) {
   const pieces = Object.values(match.position.board).filter(p => p.side === side);
-  return ['R', 'P', 'S'].map(type => `<span>${NAMES[type]} <b>${pieces.filter(p => p.type === type).length}</b></span>`).join('');
+  return ['R', 'P', 'S'].map(type => `<span class="inventory-item" title="${NAMES[type]}"><span class="sr-only">${NAMES[type]}</span>${pieceImage(type)}<b>${pieces.filter(p => p.type === type).length}</b></span>`).join('');
 }
 function render() {
   const focusedSquare = document.activeElement?.dataset?.square;
@@ -58,7 +60,7 @@ function render() {
       p.lastMove && [p.lastMove.from, p.lastMove.to].includes(square) ? 'last' : '', selected === square ? 'selected' : '', target ? 'legal' : '', target && piece ? 'capture' : ''].filter(Boolean).join(' ');
     button.setAttribute('aria-label', `${square.toUpperCase()} ${piece ? COLORS[piece.side] + NAMES[piece.type] : '空格'}${square === 'a1' ? ' 藍方基地' : square === 'i9' ? ' 紅方基地' : ''}${target ? (piece ? ' 可吃子' : ' 可移動') : ''}`);
     button.setAttribute('aria-pressed', String(selected === square));
-    if (piece) button.innerHTML = `<span class="piece ${piece.side}"><span class="piece-symbol">${NAMES[piece.type]}</span><span class="piece-type">${piece.type}</span></span>`;
+    if (piece) button.innerHTML = `<span class="piece ${piece.side} piece-${PIECE_ART[piece.type]}">${pieceImage(piece.type)}</span>`;
     button.insertAdjacentHTML('beforeend', `<span class="coordinate" aria-hidden="true">${square.toUpperCase()}</span>`);
     button.addEventListener('click', () => selectSquare(square));
     squares.push(button);
@@ -205,7 +207,7 @@ function renderReview() {
       const square = file + row, piece = state.board[square], cell = document.createElement('div');
       cell.className = `cell ${(FILES.indexOf(file) + row) % 2 ? 'dark' : ''} ${square === 'a1' ? 'base-blue' : square === 'i9' ? 'base-red' : ''} ${state.lastMove && [state.lastMove.from,state.lastMove.to].includes(square) ? 'last' : ''}`;
       cell.setAttribute('aria-label', `${square.toUpperCase()} ${piece ? COLORS[piece.side] + NAMES[piece.type] : '空格'}`);
-      if (piece) { const token = document.createElement('span'); token.className = `piece ${piece.side}`; token.textContent = NAMES[piece.type]; cell.append(token); }
+      if (piece) { const token = document.createElement('span'); token.className = `piece ${piece.side} piece-${PIECE_ART[piece.type]}`; token.innerHTML = pieceImage(piece.type); cell.append(token); }
       const coordinate = document.createElement('span'); coordinate.className = 'coordinate'; coordinate.textContent = square.toUpperCase(); cell.append(coordinate);
       $('review-board').append(cell);
     }
