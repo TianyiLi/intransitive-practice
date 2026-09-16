@@ -14,7 +14,7 @@
 
 Video transcript was unavailable. No claim of full official-server parity or video-strategy verification. Mobile CSS is included; no mobile viewport screenshot was taken.
 
-The local server is retained in tmux session `rps-practice-4318` for continued play. It is not a public deployment.
+The local server is retained in tmux session `rps-practice-4318` for continued local play. The same application is also configured for GitHub Pages at https://tianyili.github.io/intransitive-practice/ via `.github/workflows/pages.yml`.
 
 ## Strategy engine and match records
 
@@ -31,3 +31,12 @@ The local server is retained in tmux session `rps-practice-4318` for continued p
 - Reviewed the actual replay dialog screenshot; its board, move slider, save/load controls and import section rendered clearly. Browser error logs were empty.
 
 No Elo calibration or claim of optimal strategy. Route estimates assume static opponents between searched moves. Local saved records are not a cloud backup. File-picker download/upload round trip was not browser-automated; the underlying JSON import/export representation was round-trip tested.
+
+## GitHub Pages verification
+
+- Repository: https://github.com/TianyiLi/intransitive-practice . Site: https://tianyili.github.io/intransitive-practice/ .
+- Initial Actions run 35084610087 passed all 21 tests, packaged the eight allowlisted web assets and successfully deployed Pages.
+- Public root opened in the in-app browser with easy mode selected. D4–E5 received the automatic E8–D7 response, confirming module-worker loading under the repository subdirectory.
+- Public-origin WebMCP save_current_game and get_review_position succeeded; a saved two-ply validation match returned the expected position after ply 1.
+- Reload preserved the two-ply public match. Browser error logs were empty.
+- Local-origin saves remain separate; migrate them with JSON export/import. No saved matches or browser storage were committed to the repository.
