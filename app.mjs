@@ -14,6 +14,8 @@ const bot = new BotController();
 const records = new RecordStore({ getItem: key => localStorage.getItem(key), setItem: (key, value) => localStorage.setItem(key, value) });
 let reviewRecord = null;
 const opponentName = () => mode === 'codex' ? 'Codex' : `${LEVELS[mode].label}引擎`;
+const positionLabel = ply => ply === 0 ? '初始盤面 · 尚未落子' : `第 ${ply} 手後 · 第 ${Math.ceil(ply / 2)} 回合${ply % 2 ? '藍' : '紅'}方走完`;
+const nextMoveLabel = p => p.result ? `對局結束 · 共 ${p.ply} 手` : `下一手：第 ${p.ply + 1} 手 · 第 ${Math.floor(p.ply / 2) + 1} 回合${COLORS[p.turn]}`;
 const descriptions = {easy:'適合熟悉走位；選步較多變，會留下可利用的機會。',medium:'預判短期交換，兼顧棋子安全、活動空間與基地攻防。',hard:'以勝利條件規劃：突破基地、阻止對手先抵達、封鎖走法；每步思考預算 1.6 秒。',codex:'走完後到 Codex 對話說「換你」，由 Codex 直接落子。'};
 try {
   const saved = JSON.parse(sessionStorage.getItem(STORE) || 'null');
@@ -77,7 +79,9 @@ function render() {
   $('human-caption').textContent = `${COLORS[match.humanSide]}・${match.humanSide === 'blue' ? '先手' : '後手'}`;
   $('agent-caption').textContent = `${COLORS[match.agentSide]}・${match.agentSide === 'blue' ? '先手' : '後手'}`;
   $('human-inventory').innerHTML = counts(match.humanSide); $('agent-inventory').innerHTML = counts(match.agentSide);
-  $('round-label').textContent = `第 ${Math.floor(p.ply / 2) + 1} 回合`;
+  $('round-label').textContent = `第 ${p.result ? Math.ceil(p.ply / 2) : Math.floor(p.ply / 2) + 1} 回合`;
+  $('ply-label').textContent = p.result ? `共 ${p.ply} 手` : `第 ${p.ply + 1} 手待走`;
+  $('board-progress').textContent = positionLabel(p.ply);
   $('turn-dot').className = `status-dot ${p.turn}`;
   const reason = { base: '攻入對方基地', no_pieces: '吃光對方棋子', no_legal_moves: '對手已無合法走法', stagnation: '連續 200 步沒有吃子' };
   $('turn-title').textContent = p.result ? (p.result.winner === null ? '和局' : p.result.winner === match.humanSide ? '你贏了！' : `${opponentName()}獲勝`) : mode !== 'codex' && paused ? '引擎已暫停' : humanTurn ? '輪到你了' : thinking ? '引擎思考中…' : `輪到${opponentName()}`;
@@ -95,7 +99,7 @@ function render() {
   else {
     const notation = m => m ? `${m.from.toUpperCase()}${m.capture ? '×' : '–'}${m.to.toUpperCase()}` : '—';
     const lines = [];
-    for (let i = 0; i < history.length; i += 2) lines.push(`<div class="history-row"><span>${i / 2 + 1}</span><span class="blue">${notation(history[i])}</span><span class="red">${notation(history[i + 1])}</span></div>`);
+    for (let i = 0; i < history.length; i += 2) lines.push(`<div class="history-row"><span>${i / 2 + 1}</span><span class="blue"><small>第 ${i + 1} 手</small>${notation(history[i])}</span><span class="red">${history[i + 1] ? `<small>第 ${i + 2} 手</small>` : ''}${notation(history[i + 1])}</span></div>`);
     $('history').innerHTML = lines.join(''); $('history').scrollTop = $('history').scrollHeight;
   }
 }
@@ -183,6 +187,7 @@ function selectReviewRecord() {
   try {
     reviewRecord = $('saved-records').value ? records.get($('saved-records').value) : makeRecord(match, mode, '目前棋局');
     $('review-ply').max = reviewRecord.moves.length; $('review-ply').value = reviewRecord.cursor;
+    $('review-jump').max = reviewRecord.moves.length;
     $('load-record').disabled = !$('saved-records').value;
     renderReview();
   } catch (error) { $('record-message').textContent = error.message; }
@@ -190,8 +195,11 @@ function selectReviewRecord() {
 function renderReview() {
   try {
     const state = reviewPosition(reviewRecord, Number($('review-ply').value));
-    $('review-label').textContent = `第 ${state.ply} / ${state.totalPlies} 手${state.isRedoBranch ? '（悔棋後的重做分支）' : ''}`;
-    $('review-description').textContent = state.lastMove ? `${COLORS[state.lastMove.side]} ${state.lastMove.from.toUpperCase()}${state.lastMove.capture ? '×' : '–'}${state.lastMove.to.toUpperCase()}${state.result ? ' · 對局結束' : ` · 接著輪到${COLORS[state.turn]}`}` : '初始局面 · 藍方先手';
+    $('review-label').textContent = positionLabel(state.ply);
+    $('review-ply').setAttribute('aria-valuetext', positionLabel(state.ply));
+    $('review-jump').value = state.ply;
+    $('review-description').textContent = `${state.lastMove ? `剛走：${state.lastMove.from.toUpperCase()}${state.lastMove.capture ? '×' : '–'}${state.lastMove.to.toUpperCase()}。` : ''}${nextMoveLabel(state)}`;
+    $('review-total').textContent = `棋譜共 ${state.totalPlies} 手${state.isRedoBranch ? ' · 此步位於悔棋後的重做分支' : ''}。雙方各走一手，合計一回合。`;
     $('review-board').replaceChildren();
     for (let row = 9; row >= 1; row--) for (const file of FILES) {
       const square = file + row, piece = state.board[square], cell = document.createElement('div');
@@ -216,6 +224,12 @@ $('save-record').onclick = () => {
 };
 $('saved-records').onchange = selectReviewRecord;
 $('review-ply').oninput = renderReview;
+$('review-go').onclick = () => {
+  const ply = $('review-jump').valueAsNumber;
+  if (!Number.isInteger(ply) || ply < 0 || ply > reviewRecord.moves.length) { $('record-message').textContent = `請輸入 0 到 ${reviewRecord.moves.length} 的整數手數。`; return; }
+  $('record-message').textContent = ''; $('review-ply').value = ply; renderReview();
+};
+$('review-jump').onkeydown = event => { if (event.key === 'Enter') { event.preventDefault(); $('review-go').click(); } };
 $('review-prev').onclick = () => { $('review-ply').value = Number($('review-ply').value) - 1; renderReview(); };
 $('review-next').onclick = () => { $('review-ply').value = Number($('review-ply').value) + 1; renderReview(); };
 $('load-record').onclick = () => {
